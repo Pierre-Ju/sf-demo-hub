@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Delivery_Method__c</fullName>
+    <label>配送方式</label>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>自提</fullName>
+                <default>true</default>
+                <label>自提</label>
+            </value>
+            <value>
+                <fullName>快递</fullName>
+                <default>false</default>
+                <label>快递</label>
+            </value>
+            <value>
+                <fullName>同城配送</fullName>
+                <default>false</default>
+                <label>同城配送</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>
