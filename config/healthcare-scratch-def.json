@@ -1,0 +1,25 @@
+{
+  "orgName": "SF Demo Hub - Healthcare",
+  "edition": "Enterprise",
+  "language": "zh_CN",
+  "country": "CN",
+  "features": [
+    "ServiceCloud",
+    "MultiCurrency",
+    "HealthCloud",
+    "PersonAccounts"
+  ],
+  "settings": {
+    "lightningExperienceSettings": { "enableS1DesktopEnabled": true },
+    "languageSettings": {
+      "enableTranslationWorkbench": true,
+      "enableEndUserLanguages": true
+    },
+    "currencySettings": { "enableMultiCurrency": true },
+    "forecastingSettings": { "enableForecasts": true },
+    "activitiesSettings": { "enableActivityReminders": true },
+    "mobileSettings": { "enableS1EncryptedStoragePref2": false },
+    "caseSettings": { "systemUserEmail": "noreply@sf-demo-hub.invalid" },
+    "industriesSettings": { "enableAccessToMasterListOfCoveredAssets": true }
+  }
+}

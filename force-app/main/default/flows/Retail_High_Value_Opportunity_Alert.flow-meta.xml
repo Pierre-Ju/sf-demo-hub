@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <actionCalls>
+        <name>Send_Director_Alert</name>
+        <label>发送销售总监邮件提醒</label>
+        <locationX>176</locationX>
+        <locationY>288</locationY>
+        <actionName>emailSimple</actionName>
+        <actionType>emailSimple</actionType>
+        <flowTransactionModel>CurrentTransaction</flowTransactionModel>
+        <inputParameters>
+            <name>emailAddresses</name>
+            <value>
+                <elementReference>$Record.Owner.Email</elementReference>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>emailSubject</name>
+            <value>
+                <stringValue>【高价值商机提醒】{!$Record.Name} - ¥{!$Record.Amount}</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>emailBody</name>
+            <value>
+                <stringValue>致销售总监：
+
+有一条商机金额已超过 50 万元人民币，请及时关注并跟进。
+
+商机名称：{!$Record.Name}
+客户：{!$Record.Account.Name}
+金额：¥{!$Record.Amount}
+阶段：{!$Record.StageName}
+预计成交日期：{!$Record.CloseDate}
+
+请登录 Salesforce 查看商机详情。</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>sendRichBody</name>
+            <value>
+                <booleanValue>false</booleanValue>
+            </value>
+        </inputParameters>
+    </actionCalls>
+    <apiVersion>62.0</apiVersion>
+    <description>当商机金额超过 50 万元人民币时（创建或更新触发），自动向商机所有者（销售总监 persona）发送中文邮件提醒。</description>
+    <environments>Default</environments>
+    <interviewLabel>Retail High Value Opportunity Alert {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>零售-高价值商机销售总监提醒</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>AutoLaunchedFlow</processType>
+    <runInMode>SystemModeWithSharing</runInMode>
+    <start>
+        <locationX>50</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Send_Director_Alert</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Amount</field>
+            <operator>GreaterThan</operator>
+            <value>
+                <numberValue>500000.0</numberValue>
+            </value>
+        </filters>
+        <object>Opportunity</object>
+        <recordTriggerType>CreateAndUpdate</recordTriggerType>
+        <triggerType>RecordAfterSave</triggerType>
+    </start>
+    <status>Active</status>
+</Flow>

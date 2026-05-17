@@ -1,0 +1,24 @@
+{
+  "orgName": "SF Demo Hub - Manufacturing",
+  "edition": "Enterprise",
+  "language": "zh_CN",
+  "country": "CN",
+  "features": [
+    "ServiceCloud",
+    "MultiCurrency",
+    "ManufacturingCloud",
+    "SalesUserPermSet"
+  ],
+  "settings": {
+    "lightningExperienceSettings": { "enableS1DesktopEnabled": true },
+    "languageSettings": {
+      "enableTranslationWorkbench": true,
+      "enableEndUserLanguages": true
+    },
+    "currencySettings": { "enableMultiCurrency": true },
+    "forecastingSettings": { "enableForecasts": true },
+    "activitiesSettings": { "enableActivityReminders": true },
+    "mobileSettings": { "enableS1EncryptedStoragePref2": false },
+    "industriesSettings": { "enableAccessToMasterListOfCoveredAssets": true }
+  }
+}

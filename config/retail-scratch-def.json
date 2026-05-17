@@ -1,0 +1,31 @@
+{
+  "orgName": "SF Demo Hub - Retail",
+  "edition": "Enterprise",
+  "language": "zh_CN",
+  "country": "CN",
+  "features": [
+    "ServiceCloud",
+    "MultiCurrency",
+    "OrderManagement"
+  ],
+  "settings": {
+    "lightningExperienceSettings": { "enableS1DesktopEnabled": true },
+    "languageSettings": {
+      "enableTranslationWorkbench": true,
+      "enableEndUserLanguages": true
+    },
+    "currencySettings": { "enableMultiCurrency": true },
+    "forecastingSettings": { "enableForecasts": true },
+    "activitiesSettings": { "enableActivityReminders": true },
+    "mobileSettings": { "enableS1EncryptedStoragePref2": false },
+    "orderSettings": {
+      "enableOrders": true,
+      "enableNegativeQuantity": false,
+      "enableReductionOrders": true
+    },
+    "productSettings": {
+      "enableQuantitySchedule": true,
+      "enableRevenueSchedule": true
+    }
+  }
+}

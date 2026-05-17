@@ -1,0 +1,35 @@
+# Salesforce DX
+.sfdx/
+.sf/
+.localdevserver/
+deploy-options.json
+
+# Logs
+*.log
+logs/
+
+# Node
+node_modules/
+package-lock.json
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets
+.env
+.env.local
+auth/
+
+# Claude Code local settings (per-user, not committed)
+.claude/settings.local.json
+
+# Build outputs
+dist/
+build/
+coverage/

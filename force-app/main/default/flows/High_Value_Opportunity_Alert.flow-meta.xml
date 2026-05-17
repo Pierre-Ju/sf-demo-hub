@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <actionCalls>
+        <name>Send_Alert_Email</name>
+        <label>Send Alert Email</label>
+        <locationX>176</locationX>
+        <locationY>288</locationY>
+        <actionName>emailSimple</actionName>
+        <actionType>emailSimple</actionType>
+        <flowTransactionModel>CurrentTransaction</flowTransactionModel>
+        <inputParameters>
+            <name>emailAddresses</name>
+            <value>
+                <elementReference>$Record.CreatedBy.Email</elementReference>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>emailSubject</name>
+            <value>
+                <stringValue>[Pipeline Alert] High-value opportunity: {!$Record.Name}</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>emailBody</name>
+            <value>
+                <stringValue>An opportunity has crossed the $100,000 threshold and needs your attention.
+
+Name:    {!$Record.Name}
+Account: {!$Record.Account.Name}
+Amount:  {!$Record.Amount}
+Stage:   {!$Record.StageName}
+Close:   {!$Record.CloseDate}
+
+Open in Salesforce: {!$Record.Id}</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>sendRichBody</name>
+            <value>
+                <booleanValue>false</booleanValue>
+            </value>
+        </inputParameters>
+    </actionCalls>
+    <apiVersion>62.0</apiVersion>
+    <description>Sends a reminder email to the opportunity's creator whenever the Amount crosses the 100,000 threshold (on insert or whenever Amount is changed to &gt;100K).</description>
+    <environments>Default</environments>
+    <interviewLabel>High Value Opportunity Alert {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>High Value Opportunity Alert</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>AutoLaunchedFlow</processType>
+    <runInMode>SystemModeWithSharing</runInMode>
+    <start>
+        <locationX>50</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Send_Alert_Email</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Amount</field>
+            <operator>GreaterThan</operator>
+            <value>
+                <numberValue>100000.0</numberValue>
+            </value>
+        </filters>
+        <object>Opportunity</object>
+        <recordTriggerType>CreateAndUpdate</recordTriggerType>
+        <triggerType>RecordAfterSave</triggerType>
+    </start>
+    <status>Active</status>
+</Flow>
