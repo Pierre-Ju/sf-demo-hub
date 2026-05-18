@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>零售报价单 Demo 流程图</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                 "Microsoft YaHei", Helvetica, sans-serif;
+    background: #f5f7fa;
+    color: #2c3e50;
+    padding: 32px 20px;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1 {
+    text-align: center;
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #2c3e50;
+  }
+  .subtitle {
+    text-align: center;
+    color: #7f8c8d;
+    font-size: 13px;
+    margin-bottom: 28px;
+  }
+  .canvas-wrap {
+    max-width: 1280px;
+    margin: 0 auto;
+    background: #ffffff;
+    border: 1px solid #e1e8ed;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    padding: 24px;
+    overflow-x: auto;
+  }
+
+  /* Color tokens per role */
+  :root {
+    --c-sales: #3498db;      --c-sales-bg: #eaf4fc;
+    --c-system: #95a5a6;     --c-system-bg: #ecf0f1;
+    --c-manager: #e67e22;    --c-manager-bg: #fdf2e7;
+    --c-customer: #27ae60;   --c-customer-bg: #e8f6ee;
+    --c-reject: #e74c3c;     --c-reject-bg: #fbeae7;
+    --c-decision: #f39c12;   --c-decision-bg: #fff5e0;
+  }
+
+  .canvas {
+    position: relative;
+    width: 1200px;
+    height: 1340px;
+    margin: 0 auto;
+  }
+
+  /* Lane backgrounds */
+  .lanes {
+    position: absolute; inset: 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    pointer-events: none;
+  }
+  .lane {
+    border-right: 1px dashed #cfd8dc;
+    background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(0,0,0,0.01) 100%);
+  }
+  .lane:last-child { border-right: none; }
+
+  /* Lane headers */
+  .lane-header {
+    position: absolute;
+    top: 0;
+    width: 300px;
+    height: 60px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; font-weight: 600;
+    color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+  }
+  .lh-sales    { left: 0;   background: var(--c-sales); }
+  .lh-system   { left: 300px; background: var(--c-system); }
+  .lh-manager  { left: 600px; background: var(--c-manager); }
+  .lh-customer { left: 900px; background: var(--c-customer); }
+
+  /* Step cards */
+  .step {
+    position: absolute;
+    width: 200px;
+    min-height: 56px;
+    padding: 8px 12px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    cursor: help;
+    display: flex; flex-direction: column; justify-content: center;
+    transition: transform 0.15s, box-shadow 0.15s;
+    z-index: 2;
+  }
+  .step:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.14);
+    z-index: 10;
+  }
+  .step .num {
+    display: inline-block;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    color: white;
+    font-size: 12px; font-weight: 700;
+    text-align: center; line-height: 22px;
+    margin-right: 6px;
+  }
+  .step .label { font-size: 13px; font-weight: 500; line-height: 1.35; }
+  .step .role  { font-size: 10px; color: #95a5a6; margin-top: 2px; }
+
+  .role-sales    .num { background: var(--c-sales); }
+  .role-sales            { border-left: 4px solid var(--c-sales); }
+  .role-system   .num { background: var(--c-system); }
+  .role-system           { border-left: 4px solid var(--c-system); }
+  .role-manager  .num { background: var(--c-manager); }
+  .role-manager          { border-left: 4px solid var(--c-manager); }
+  .role-customer .num { background: var(--c-customer); }
+  .role-customer         { border-left: 4px solid var(--c-customer); }
+
+  /* Terminal nodes (Rejected, Closed) */
+  .terminal { border-left-color: var(--c-reject) !important; }
+  .terminal .num { background: var(--c-reject) !important; }
+  .terminal-ok { border-left-color: #16a085 !important; }
+  .terminal-ok .num { background: #16a085 !important; }
+
+  /* Diamond decision nodes */
+  .diamond {
+    position: absolute;
+    width: 220px; height: 90px;
+    cursor: help;
+    z-index: 2;
+  }
+  .diamond:hover { z-index: 10; }
+  .diamond .shape {
+    position: absolute; inset: 0;
+    background: var(--c-decision-bg);
+    border: 2px solid var(--c-decision);
+    transform: rotate(45deg) scale(0.7);
+    transform-origin: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    transition: transform 0.15s;
+  }
+  .diamond:hover .shape {
+    transform: rotate(45deg) scale(0.72);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.14);
+  }
+  .diamond .text {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 600;
+    color: #b9770e;
+    text-align: center;
+    pointer-events: none;
+  }
+  .diamond .num {
+    display: inline-block;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: var(--c-decision);
+    color: white;
+    font-size: 12px; font-weight: 700;
+    text-align: center; line-height: 22px;
+    margin-bottom: 4px;
+  }
+
+  /* Tooltip */
+  .step[data-tip]::after,
+  .diamond[data-tip]::after {
+    content: attr(data-tip);
+    position: absolute;
+    top: 50%; left: 100%;
+    transform: translateY(-50%);
+    margin-left: 16px;
+    width: 280px;
+    padding: 10px 12px;
+    background: rgba(33, 33, 33, 0.96);
+    color: #fff;
+    font-size: 12px;
+    line-height: 1.55;
+    border-radius: 6px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s;
+    white-space: pre-wrap;
+    z-index: 100;
+  }
+  .step[data-tip]::before,
+  .diamond[data-tip]::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 100%;
+    transform: translateY(-50%);
+    margin-left: 10px;
+    border: 6px solid transparent;
+    border-right-color: rgba(33, 33, 33, 0.96);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s;
+    z-index: 100;
+  }
+  /* Tooltip on the left for rightmost lane (customer) */
+  .tip-left[data-tip]::after {
+    left: auto; right: 100%; margin-left: 0; margin-right: 16px;
+  }
+  .tip-left[data-tip]::before {
+    left: auto; right: 100%; margin-left: 0; margin-right: 10px;
+    border-right-color: transparent; border-left-color: rgba(33, 33, 33, 0.96);
+  }
+  .step:hover::after, .step:hover::before,
+  .diamond:hover::after, .diamond:hover::before { opacity: 1; }
+
+  /* SVG arrows layer */
+  .arrows {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .arrow-label {
+    font-size: 11px;
+    font-weight: 600;
+    fill: #5d6d7e;
+  }
+  .arrow-label-yes { fill: #16a085; }
+  .arrow-label-no  { fill: #c0392b; }
+
+  /* Legend */
+  .legend {
+    max-width: 1280px;
+    margin: 20px auto 0;
+    display: flex; flex-wrap: wrap;
+    gap: 16px;
+    justify-content: center;
+    font-size: 12px;
+    color: #5d6d7e;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-sw {
+    width: 14px; height: 14px; border-radius: 3px;
+  }
+  .footer {
+    max-width: 1280px;
+    margin: 20px auto 0;
+    text-align: center;
+    color: #95a5a6;
+    font-size: 11px;
+  }
+</style>
+</head>
+<body>
+
+<h1>零售报价单 Demo 端到端流程图</h1>
+<div class="subtitle">悬停每个步骤查看详细说明 · 4 个角色泳道 · 14 个步骤 · 含审批决策分支</div>
+
+<div class="canvas-wrap">
+<div class="canvas">
+
+  <div class="lanes">
+    <div class="lane"></div>
+    <div class="lane"></div>
+    <div class="lane"></div>
+    <div class="lane"></div>
+  </div>
+
+  <div class="lane-header lh-sales">销售代表</div>
+  <div class="lane-header lh-system">系统</div>
+  <div class="lane-header lh-manager">销售主管</div>
+  <div class="lane-header lh-customer">客户</div>
+
+  <!-- SVG arrows -->
+  <svg class="arrows" viewBox="0 0 1200 1340" preserveAspectRatio="none">
+    <defs>
+      <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5"
+              markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="#7f8c8d" />
+      </marker>
+      <marker id="arr-green" viewBox="0 0 10 10" refX="9" refY="5"
+              markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="#16a085" />
+      </marker>
+      <marker id="arr-red" viewBox="0 0 10 10" refX="9" refY="5"
+              markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="#c0392b" />
+      </marker>
+    </defs>
+
+    <!-- 1->2->3->4->5 vertical in sales lane (x=150 = card center) -->
+    <line x1="150" y1="146" x2="150" y2="170" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arr)" />
+    <line x1="150" y1="231" x2="150" y2="255" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arr)" />
+    <line x1="150" y1="316" x2="150" y2="340" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arr)" />
+    <line x1="150" y1="401" x2="150" y2="425" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arr)" />
+    <line x1="150" y1="486" x2="150" y2="510" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arr)" />
+
+    <!-- 5->6: sales(150,510) down to (150,560) then right to system diamond (350,580) -->
+    <path d="M150,510 L150,580 L350,580" stroke="#7f8c8d" stroke-width="2" fill="none" marker-end="url(#arr)" />
+
+    <!-- 6 (diamond center ~ x=450, y=580) -->
+    <!-- 6->7 (Yes, discount>15): left to sales(150,640) -->
+    <path d="M350,610 L350,640 L250,640" stroke="#16a085" stroke-width="2" fill="none" marker-end="url(#arr-green)" />
+    <text x="295" y="632" class="arrow-label arrow-label-yes">是 > 15%</text>
+
+    <!-- 6->12 (No, discount<=15): right then long detour down to send-quote step 12 -->
+    <path d="M550,580 L1100,580 L1100,1015 L250,1015"
+          stroke="#c0392b" stroke-width="2" stroke-dasharray="4 3" fill="none" marker-end="url(#arr-red)" />
+    <text x="1108" y="595" class="arrow-label arrow-label-no">否 ≤ 15%</text>
+
+    <!-- 7->8: sales(250,640) right to system(310,705) -->
+    <path d="M250,640 L300,640 L300,705 L310,705" stroke="#7f8c8d" stroke-width="2" fill="none" marker-end="url(#arr)" />
+
+    <!-- 8->9: system(510,705) right to manager diamond (640,790) -->
+    <path d="M510,705 L600,705 L600,790 L640,790" stroke="#7f8c8d" stroke-width="2" fill="none" marker-end="url(#arr)" />
+
+    <!-- 9 (diamond center ~ x=750, y=790) -->
+    <!-- 9->10 (Approve): left to system(510,875) -->
+    <path d="M650,820 L650,875 L510,875" stroke="#16a085" stroke-width="2" fill="none" marker-end="url(#arr-green)" />
+    <text x="540" y="867" class="arrow-label arrow-label-yes">批准</text>
+
+    <!-- 9->11 (Reject): down to system rejected (510, 960) -->
+    <path d="M750,820 L750,960 L510,960" stroke="#c0392b" stroke-width="2" fill="none" marker-end="url(#arr-red)" />
+    <text x="595" y="952" class="arrow-label arrow-label-no">拒绝</text>
+
+    <!-- 10->12: system(310,875) left/down to sales(250,1015) -->
+    <path d="M310,875 L280,875 L280,1015 L250,1015" stroke="#7f8c8d" stroke-width="2" fill="none" marker-end="url(#arr)" />
+
+    <!-- 11 is terminal — small "END" indicator drawn as part of card style -->
+
+    <!-- 12->13: sales(250,1015) right to customer(900,1100) -->
+    <path d="M250,1015 L1000,1015 L1000,1100" stroke="#7f8c8d" stroke-width="2" fill="none" marker-end="url(#arr)" />
+
+    <!-- 13->14: customer(900,1100) down-left to sales(250,1185) -->
+    <path d="M900,1100 L880,1100 L880,1185 L250,1185" stroke="#7f8c8d" stroke-width="2" fill="none" marker-end="url(#arr)" />
+
+  </svg>
+
+  <!-- STEPS -->
+  <!-- Step 1: 销售代表, x=50, y=90 -->
+  <div class="step role-sales" style="left:50px; top:90px;"
+       data-tip="从已有 Opportunity 进入。Demo 中推荐用『万家鲜生 — 生鲜冷链系统升级』，该商机已挂 Standard Pricebook 且预置了 4 个产品行（由 seed-retail-quotes.apex 注入）。">
+    <div><span class="num">1</span><span class="label">打开商机 Opportunity</span></div>
+    <div class="role">Sales · 起点</div>
+  </div>
+
+  <!-- Step 2: 销售代表, x=50, y=175 -->
+  <div class="step role-sales" style="left:50px; top:175px;"
+       data-tip="Opp 详情页 → Quotes 相关列表 → 点击 New Quote。填入 Quote Name（如『万家鲜生 Q2 报价 v1』）、Expiration Date（建议 14 天后）。Status 默认 Draft。">
+    <div><span class="num">2</span><span class="label">创建报价单 Quote</span></div>
+    <div class="role">Sales · 表单</div>
+  </div>
+
+  <!-- Step 3: 销售代表, x=50, y=260 -->
+  <div class="step role-sales" style="left:50px; top:260px;"
+       data-tip="Quote 详情页 → Quote Line Items 相关列表 → Add Products。从 Standard Pricebook 选取零售商品（智能扫地机 ¥2499、红酒礼盒 ¥899、真丝四件套 ¥1599 等），输入数量。">
+    <div><span class="num">3</span><span class="label">添加商品行 Line Items</span></div>
+    <div class="role">Sales · 选品</div>
+  </div>
+
+  <!-- Step 4: 销售代表, x=50, y=345 -->
+  <div class="step role-sales" style="left:50px; top:345px;"
+       data-tip="编辑 Quote，填写零售行业字段：门店编号（Store_Number__c）、促销代码（Promo_Code__c）、会员等级（普通/银卡/金卡/钻石）、配送方式（自提/快递/同城配送）。">
+    <div><span class="num">4</span><span class="label">填写零售行业字段</span></div>
+    <div class="role">Sales · 行业差异化</div>
+  </div>
+
+  <!-- Step 5: 销售代表, x=50, y=430 -->
+  <div class="step role-sales" style="left:50px; top:430px;"
+       data-tip="Discount 字段为百分比数字（0-100，无 % 符号）。例如输入 20 表示 20% 折扣。设置 Expiration Date 决定报价时效。GrandTotal 由系统按 Subtotal × (1 - Discount%) + Tax + Shipping 自动计算。">
+    <div><span class="num">5</span><span class="label">设置折扣 + 过期日</span></div>
+    <div class="role">Sales · 定价</div>
+  </div>
+
+  <!-- Step 6: 系统 diamond, center ~x=450, y=580 -->
+  <div class="diamond" style="left:340px; top:535px;"
+       data-tip="审批流程入口判断（approvalProcess entryCriteria）：Quote.Discount > 15。
+是：进入 Manager 审批通道，记录被锁定。
+否：报价直接可发送给客户，无需审批。">
+    <div class="shape"></div>
+    <div class="text">
+      <span class="num">6</span>
+      <div>折扣 &gt; 15%?</div>
+    </div>
+  </div>
+
+  <!-- Step 7: 销售代表, x=50, y=615 -->
+  <div class="step role-sales" style="left:50px; top:615px;"
+       data-tip="Quote 顶部操作栏 → Submit for Approval。此时系统触发 initialSubmissionActions。需 User 记录中已配置 Manager 字段，否则审批无路由目标。">
+    <div><span class="num">7</span><span class="label">提交审批</span></div>
+    <div class="role">Sales · 提交</div>
+  </div>
+
+  <!-- Step 8: 系统, x=310, y=680 -->
+  <div class="step role-system" style="left:310px; top:680px;"
+       data-tip="initialSubmissionActions 自动执行：
+1. 记录锁定（recordEditability=AdminOnly，非管理员无法编辑）
+2. WorkflowFieldUpdate Quote_Set_Status_InReview 把 Status 改为『In Review』">
+    <div><span class="num">8</span><span class="label">锁定记录 + Status=In Review</span></div>
+    <div class="role">System · 自动</div>
+  </div>
+
+  <!-- Step 9: 销售主管 diamond, center ~x=750, y=790 -->
+  <div class="diamond" style="left:640px; top:745px;"
+       data-tip="审批分配给提交人的 Manager（approvalStep.assignedApprover 使用 userHierarchyField=Manager）。
+Manager 在以下位置看到请求：
+- 首页 Items to Approve 组件
+- My Approvals 列表
+- 邮件通知
+点击 Approve 或 Reject。">
+    <div class="shape"></div>
+    <div class="text">
+      <span class="num">9</span>
+      <div>Manager 决策</div>
+    </div>
+  </div>
+
+  <!-- Step 10: 系统, x=310, y=850 -->
+  <div class="step role-system terminal-ok" style="left:310px; top:850px;"
+       data-tip="finalApprovalActions 自动执行：
+1. WorkflowFieldUpdate Quote_Set_Status_Approved 把 Status 改为『Approved』
+2. finalApprovalRecordLock=false，记录重新解锁，销售可继续编辑。">
+    <div><span class="num">10</span><span class="label">Status=Approved + 解锁</span></div>
+    <div class="role">System · 终止动作</div>
+  </div>
+
+  <!-- Step 11: 系统 (Rejected terminal), x=310, y=935 -->
+  <div class="step role-system terminal" style="left:310px; top:935px;"
+       data-tip="finalRejectionActions 自动执行：WorkflowFieldUpdate Quote_Set_Status_Rejected 设 Status='Rejected'。
+后续动作：销售调整折扣或商品，回到 Step 5 重新提交。
+（流程在此终止，需销售手动启动新一轮）">
+    <div><span class="num">11</span><span class="label">Status=Rejected（终止）</span></div>
+    <div class="role">System · 拒绝分支</div>
+  </div>
+
+  <!-- Step 12: 销售代表, x=50, y=990 -->
+  <div class="step role-sales" style="left:50px; top:990px;"
+       data-tip="生成 Quote PDF（Quote 详情页 → Create PDF）→ 邮件附件发送 / 微信发给客户。也可走线下电话沟通。
+报价单状态保持 Approved（高折扣已审批）或 Draft（折扣 ≤15% 跳过审批直接来此）。">
+    <div><span class="num">12</span><span class="label">发送报价给客户</span></div>
+    <div class="role">Sales · 对外</div>
+  </div>
+
+  <!-- Step 13: 客户, x=900, y=1075 -->
+  <div class="step role-customer tip-left" style="left:900px; top:1075px;"
+       data-tip="客户线下评估后回复：
+- 接受 → 销售在系统改 Status='Accepted'
+- 拒绝 → 销售在系统改 Status='Denied' 或回到 Step 4 重新议价
+该步骤在 SF 系统外发生，仅在销售端有记录动作。">
+    <div><span class="num">13</span><span class="label">客户接受 / 拒绝</span></div>
+    <div class="role">Customer · 外部</div>
+  </div>
+
+  <!-- Step 14: 销售代表, x=50, y=1160 (terminal) -->
+  <div class="step role-sales terminal-ok" style="left:50px; top:1160px;"
+       data-tip="销售根据客户反馈手动设置最终状态：
+- Accepted：客户接受，可联动 Opp 转 Closed Won
+- Denied：客户拒绝，可联动 Opp 转 Closed Lost
+报价单生命周期结束。">
+    <div><span class="num">14</span><span class="label">关闭报价（Accepted / Denied）</span></div>
+    <div class="role">Sales · 终止</div>
+  </div>
+
+</div>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><span class="legend-sw" style="background:var(--c-sales)"></span>销售代表</div>
+  <div class="legend-item"><span class="legend-sw" style="background:var(--c-system)"></span>系统（审批流程 + Field Updates）</div>
+  <div class="legend-item"><span class="legend-sw" style="background:var(--c-manager)"></span>销售主管 / Manager</div>
+  <div class="legend-item"><span class="legend-sw" style="background:var(--c-customer)"></span>客户</div>
+  <div class="legend-item"><span class="legend-sw" style="background:var(--c-decision)"></span>决策分支</div>
+  <div class="legend-item"><span class="legend-sw" style="background:var(--c-reject)"></span>拒绝 / 终止</div>
+  <div class="legend-item"><span class="legend-sw" style="background:#16a085"></span>批准 / 成交</div>
+</div>
+
+<div class="footer">
+  sf-demo-hub · Retail Quote Approval Flow · 数据由 seed-retail-quotes.apex 注入
+</div>
+
+</body>
+</html>
