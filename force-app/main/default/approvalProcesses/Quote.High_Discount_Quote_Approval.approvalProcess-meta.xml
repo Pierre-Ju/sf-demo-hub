@@ -20,7 +20,7 @@
     <enableMobileDeviceAccess>false</enableMobileDeviceAccess>
     <entryCriteria>
         <criteriaItems>
-            <field>Quote.Discount</field>
+            <field>Quote.Auto_Discount__c</field>
             <operation>greaterThan</operation>
             <value>15</value>
         </criteriaItems>

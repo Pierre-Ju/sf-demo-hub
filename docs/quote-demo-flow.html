@@ -372,20 +372,23 @@
 
   <!-- Step 5: 销售代表, x=50, y=430 -->
   <div class="step role-sales" style="left:50px; top:430px;"
-       data-tip="Discount 字段为百分比数字（0-100，无 % 符号）。例如输入 20 表示 20% 折扣。设置 Expiration Date 决定报价时效。GrandTotal 由系统按 Subtotal × (1 - Discount%) + Tax + Shipping 自动计算。">
-    <div><span class="num">5</span><span class="label">设置折扣 + 过期日</span></div>
+       data-tip="行级 UnitPrice 由销售在 Quote Line Items 上设定。Expiration Date 决定报价时效。
+注意：Quote 上的折扣字段已退场，改由 Auto_Discount__c 自动计算（毛利率公式，下一步判断使用）。销售无法手动覆盖。">
+    <div><span class="num">5</span><span class="label">设置 UnitPrice + 过期日</span></div>
     <div class="role">Sales · 定价</div>
   </div>
 
   <!-- Step 6: 系统 diamond, center ~x=450, y=580 -->
   <div class="diamond" style="left:340px; top:535px;"
-       data-tip="审批流程入口判断（approvalProcess entryCriteria）：Quote.Discount > 15。
-是：进入 Manager 审批通道，记录被锁定。
-否：报价直接可发送给客户，无需审批。">
+       data-tip="审批入口（approvalProcess entryCriteria）：Quote.Auto_Discount__c > 15。
+Auto_Discount__c 是 Quote 上的 Formula 字段：
+((Subtotal - Total_Cost__c) / Subtotal) × 100 = 毛利率%。
+Total_Cost__c 由 QuoteLineItemTrigger 在 QLI 变更时累加 (QLI.Cost_Price × Quantity) 写入。
+是（毛利 > 15%）→ 审批；否 → 直发客户。">
     <div class="shape"></div>
     <div class="text">
       <span class="num">6</span>
-      <div>折扣 &gt; 15%?</div>
+      <div>毛利率 &gt; 15%?</div>
     </div>
   </div>
 
@@ -458,9 +461,9 @@ Manager 在以下位置看到请求：
 
   <!-- Step 14: 销售代表, x=50, y=1160 (terminal) -->
   <div class="step role-sales terminal-ok" style="left:50px; top:1160px;"
-       data-tip="销售根据客户反馈手动设置最终状态：
-- Accepted：客户接受，可联动 Opp 转 Closed Won
-- Denied：客户拒绝，可联动 Opp 转 Closed Lost
+       data-tip="销售在 Quote 页面顶栏点 Quick Action 一键关闭：
+- 【客户接受（关闭）】QuickAction Mark_Accepted → Status=Accepted（联动 Opp 转 Closed Won）
+- 【客户拒绝（关闭）】QuickAction Mark_Denied → Status=Denied（联动 Opp 转 Closed Lost）
 报价单生命周期结束。">
     <div><span class="num">14</span><span class="label">关闭报价（Accepted / Denied）</span></div>
     <div class="role">Sales · 终止</div>

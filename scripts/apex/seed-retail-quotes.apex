@@ -56,13 +56,25 @@ Map<String, Decimal> priceMap = new Map<String, Decimal>{
     'RTL-DEMO-007' => 199.00,
     'RTL-DEMO-008' => 499.00
 };
+// 成本价：与售价拉开毛利率，部分商品毛利接近/超过 15% 阈值以演示审批触发
+Map<String, Decimal> costMap = new Map<String, Decimal>{
+    'RTL-DEMO-001' => 1800.00,  // 毛利 28%
+    'RTL-DEMO-002' => 550.00,   // 毛利 39%
+    'RTL-DEMO-003' => 900.00,   // 毛利 44%
+    'RTL-DEMO-004' => 1100.00,  // 毛利 15%（临界）
+    'RTL-DEMO-005' => 500.00,   // 毛利 28%
+    'RTL-DEMO-006' => 200.00,   // 毛利 33%
+    'RTL-DEMO-007' => 160.00,   // 毛利 20%
+    'RTL-DEMO-008' => 350.00    // 毛利 30%
+};
 List<PricebookEntry> pbeList = new List<PricebookEntry>();
 for (Product2 p : products) {
     pbeList.add(new PricebookEntry(
-        Pricebook2Id = stdPb.Id,
-        Product2Id   = p.Id,
-        UnitPrice    = priceMap.get(p.ProductCode),
-        IsActive     = true,
+        Pricebook2Id     = stdPb.Id,
+        Product2Id       = p.Id,
+        UnitPrice        = priceMap.get(p.ProductCode),
+        Cost_Price__c    = costMap.get(p.ProductCode),
+        IsActive         = true,
         UseStandardPrice = false
     ));
 }
